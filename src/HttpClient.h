@@ -62,14 +62,14 @@ public:
         Use this when you need to have sent additional headers in the request,
         but you will also need to call beginRequest() at the start.
     */
-    void endRequest();
+    String endRequest();
 
     /** Start the body of a more complex request.
         Use this when you need to send the body after additional headers
         in the request, but can optionally call endRequest() when
         you are finished.
     */
-    void beginBody();
+    String beginBody();
 
     /** Connect to the server and start to send a GET request.
       @param aURLPath     Url to request
@@ -170,35 +170,35 @@ public:
       @param aHeader Header line to send, in its entirety (but without the
                      trailing CRLF.  E.g. "Authorization: Basic YQDDCAIGES"
     */
-    void sendHeader(const char* aHeader);
+    String makeHeader(const char* aHeader);
 
-    void sendHeader(const String& aHeader)
-      { sendHeader(aHeader.c_str()); }
+    String makeHeader(const String& aHeader)
+      { return makeHeader(aHeader.c_str()); }
 
     /** Send an additional header line.  This is an alternate form of
-      sendHeader() which takes the header name and content as separate strings.
+      makeHeader() which takes the header name and content as separate strings.
       The call will add the ": " to separate the header, so for example, to
-      send a XXXXXX header call sendHeader("XXXXX", "Something")
+      send a XXXXXX header call makeHeader("XXXXX", "Something")
       @param aHeaderName Type of header being sent
       @param aHeaderValue Value for that header
     */
-    void sendHeader(const char* aHeaderName, const char* aHeaderValue);
+    String makeHeader(const char* aHeaderName, const char* aHeaderValue);
 
-    void sendHeader(const String& aHeaderName, const String& aHeaderValue)
-      { sendHeader(aHeaderName.c_str(), aHeaderValue.c_str()); }
+    String makeHeader(const String& aHeaderName, const String& aHeaderValue)
+      { return makeHeader(aHeaderName.c_str(), aHeaderValue.c_str()); }
 
     /** Send an additional header line.  This is an alternate form of
-      sendHeader() which takes the header name and content separately but where
+      makeHeader() which takes the header name and content separately but where
       the value is provided as an integer.
       The call will add the ": " to separate the header, so for example, to
-      send a XXXXXX header call sendHeader("XXXXX", 123)
+      send a XXXXXX header call makeHeader("XXXXX", 123)
       @param aHeaderName Type of header being sent
       @param aHeaderValue Value for that header
     */
-    void sendHeader(const char* aHeaderName, const int aHeaderValue);
+    String makeHeader(const char* aHeaderName, const int aHeaderValue);
 
-    void sendHeader(const String& aHeaderName, const int aHeaderValue)
-      { sendHeader(aHeaderName.c_str(), aHeaderValue); }
+    String makeHeader(const String& aHeaderName, const int aHeaderValue)
+      { return makeHeader(aHeaderName.c_str(), aHeaderValue); }
 
     /** Send a basic authentication header.  This will encode the given username
       and password, and send them in suitable header line for doing Basic
@@ -327,12 +327,12 @@ protected:
       @param aHttpMethod  Type of HTTP request to make, e.g. "GET", "POST", etc.
       @return 0 if successful, else error
     */
-    int sendInitialHeaders(const char* aURLPath,
+    String makeInitialHeaders(const char* aURLPath,
                      const char* aHttpMethod);
 
     /* Let the server know that we've reached the end of the headers
     */
-    void finishHeaders();
+    String finishHeaders();
 
     /** Reading any pending data from the client (used in connection keep alive mode)
     */

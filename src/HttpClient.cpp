@@ -66,6 +66,7 @@ void HttpClient::beginRequest()
 int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod, 
                                 const char* aContentType, int aContentLength, const byte aBody[])
 {
+    String buff = "";
     if (iState == eReadingBody || iState == eReadingChunkLength || iState == eReadingBodyChunk)
     {
         flushClientRx();
@@ -84,7 +85,7 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
     {
         if (iServerName)
         {
-            if (!iClient->connect(iServerName, iServerPort) > 0)
+            if (!iClient->connect(iServerName, iServerPort))
             {
 #ifdef LOGGING
                 Serial.println("Connection failed");
@@ -94,7 +95,7 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
         }
         else
         {
-            if (!iClient->connect(iServerAddress, iServerPort) > 0)
+            if (!iClient->connect(iServerAddress, iServerPort))
             {
 #ifdef LOGGING
                 Serial.println("Connection failed");
@@ -111,18 +112,18 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
     }
 
     // Now we're connected, send the first part of the request
-    int ret = sendInitialHeaders(aURLPath, aHttpMethod);
+    buff += makeInitialHeaders(aURLPath, aHttpMethod);
 
-    if (HTTP_SUCCESS == ret)
+    if (buff.length() > 0)
     {
         if (aContentType)
         {
-            sendHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
+            buff += makeHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
         }
 
         if (aContentLength > 0)
         {
-            sendHeader(HTTP_HEADER_CONTENT_LENGTH, aContentLength);
+            buff += makeHeader(HTTP_HEADER_CONTENT_LENGTH, aContentLength);
         }
 
         bool hasBody = (aBody && aContentLength > 0);
@@ -130,77 +131,83 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
         if (initialState == eIdle || hasBody)
         {
             // This was a simple version of the API, so terminate the headers now
-            finishHeaders();
+            buff += finishHeaders();
         }
-        // else we'll call it in endRequest or in the first call to print, etc.
 
         if (hasBody)
         {
-                write(aBody, aContentLength);
+            buff += (char*)aBody;
+            // write(aBody, aContentLength);
         }
+        write((const uint8_t*)buff.c_str(), buff.length());
+
     }
 
-    return ret;
+    return 1;
 }
 
-int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod)
+String HttpClient::makeInitialHeaders(const char* aURLPath, const char* aHttpMethod)
 {
+    String buff = "";
 #ifdef LOGGING
     Serial.println("Connected");
 #endif
     // Send the HTTP command, i.e. "GET /somepath/ HTTP/1.0"
-    iClient->print(aHttpMethod);
-    iClient->print(" ");
-
-    iClient->print(aURLPath);
-    iClient->println(" HTTP/1.1");
-    if (iSendDefaultRequestHeaders)
-    {
+    buff += aHttpMethod;
+    buff += " ";
+    buff += aURLPath;
+    buff += " HTTP/1.1\r\n";
+    if (iSendDefaultRequestHeaders) {
         // The host header, if required
-        if (iServerName)
-        {
-            iClient->print("Host: ");
-            iClient->print(iServerName);
-            if (iServerPort != kHttpPort)
-            {
-              iClient->print(":");
-              iClient->print(iServerPort);
+        if (iServerName) {
+            buff += "Host: ";
+            buff += iServerName;
+            if (iServerPort != kHttpPort) {
+                buff += ":";
+                buff += String(iServerPort);
             }
-            iClient->println();
+            buff += "\r\n";
         }
         // And user-agent string
-        sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
+        buff += makeHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
     }
 
     if (iConnectionClose)
     {
         // Tell the server to
         // close this connection after we're done
-        sendHeader(HTTP_HEADER_CONNECTION, "close");
+        buff += makeHeader(HTTP_HEADER_CONNECTION, "close");
     }
-
-    // Everything has gone well
     iState = eRequestStarted;
-    return HTTP_SUCCESS;
+    return buff;
 }
 
-void HttpClient::sendHeader(const char* aHeader)
+String HttpClient::makeHeader(const char* aHeader)
 {
-    iClient->println(aHeader);
+    String buff;
+    buff = (char*)aHeader;
+    buff += "\r\n";
+    return buff;
 }
 
-void HttpClient::sendHeader(const char* aHeaderName, const char* aHeaderValue)
+String HttpClient::makeHeader(const char* aHeaderName, const char* aHeaderValue)
 {
-    iClient->print(aHeaderName);
-    iClient->print(": ");
-    iClient->println(aHeaderValue);
+    String buff;
+    buff = (char*)aHeaderName;
+    buff += ": ";
+    buff += aHeaderValue;
+    buff += "\r\n";
+    return buff;
 }
 
-void HttpClient::sendHeader(const char* aHeaderName, const int aHeaderValue)
+String HttpClient::makeHeader(const char* aHeaderName, const int aHeaderValue)
 {
-    iClient->print(aHeaderName);
-    iClient->print(": ");
-    iClient->println(aHeaderValue);
+    String buff;
+    buff = (char*)aHeaderName;
+    buff += ": ";
+    buff += String(aHeaderValue);
+    buff += "\r\n";
+    return buff;
 }
 
 void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
@@ -252,10 +259,10 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
     iClient->println();
 }
 
-void HttpClient::finishHeaders()
+String HttpClient::finishHeaders()
 {
-    iClient->println();
     iState = eRequestSent;
+    return "\r\n";
 }
 
 void HttpClient::flushClientRx()
@@ -266,19 +273,20 @@ void HttpClient::flushClientRx()
     }
 }
 
-void HttpClient::endRequest()
+String HttpClient::endRequest()
 {
-    beginBody();
+    return beginBody();
 }
 
-void HttpClient::beginBody()
+String HttpClient::beginBody()
 {
     if (iState < eRequestSent)
     {
         // We still need to finish off the headers
-        finishHeaders();
+        return finishHeaders();
     }
     // else the end of headers has already been sent, so nothing to do here
+    return "";
 }
 
 int HttpClient::get(const char* aURLPath)

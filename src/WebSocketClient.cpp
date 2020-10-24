@@ -35,6 +35,7 @@ int WebSocketClient::begin(const char* aPath)
 
     if (status == 0)
     {
+        String buff = "";
         uint8_t randomKey[16];
         char base64RandomKey[25];
 
@@ -47,11 +48,11 @@ int WebSocketClient::begin(const char* aPath)
         b64_encode(randomKey, sizeof(randomKey), (unsigned char*)base64RandomKey, sizeof(base64RandomKey));
 
         // start the connection upgrade sequence
-        sendHeader("Upgrade", "websocket");
-        sendHeader("Connection", "Upgrade");
-        sendHeader("Sec-WebSocket-Key", base64RandomKey);
-        sendHeader("Sec-WebSocket-Version", "13");
-        endRequest();
+        buff += makeHeader("Upgrade", "websocket");
+        buff += makeHeader("Connection", "Upgrade");
+        buff += makeHeader("Sec-WebSocket-Key", base64RandomKey);
+        buff += makeHeader("Sec-WebSocket-Version", "13");
+        buff += endRequest();
 
         status = responseStatusCode();
 
