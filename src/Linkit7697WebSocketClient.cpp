@@ -1,9 +1,9 @@
 // (c) Copyright Arduino. 2016
 // Released under Apache License, version 2.0
 
-#include "b64.h"
+#include "Linkit7697b64.h"
 
-#include "WebSocketClient.h"
+#include "Linkit7697WebSocketClient.h"
 
 WebSocketClient::WebSocketClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
  : HttpClient(aClient, aServerName, aServerPort),

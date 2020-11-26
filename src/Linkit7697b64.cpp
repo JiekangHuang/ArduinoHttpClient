@@ -2,7 +2,7 @@
 // (c) Copyright 2010 MCQN Ltd.
 // Released under Apache License, version 2.0
 
-#include "b64.h"
+#include "Linkit7697b64.h"
 
 /* Simple test program
 #include <stdio.h>

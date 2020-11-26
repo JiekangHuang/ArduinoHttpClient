@@ -1,12 +1,12 @@
 // (c) Copyright Arduino. 2016
 // Released under Apache License, version 2.0
 
-#ifndef WebSocketClient_h
-#define WebSocketClient_h
+#ifndef Linkit7697WebSocketClient_h
+#define Linkit7697WebSocketClient_h
 
 #include <Arduino.h>
 
-#include "HttpClient.h"
+#include "Linkit7697HttpClient.h"
 
 static const int TYPE_CONTINUATION     = 0x0;
 static const int TYPE_TEXT             = 0x1;

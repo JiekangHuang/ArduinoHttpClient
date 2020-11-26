@@ -2,7 +2,7 @@
 // (c) Copyright Arduino. 2019
 // Released under Apache License, version 2.0
 
-#include "URLEncoder.h"
+#include "Linkit7697URLEncoder.h"
 
 URLEncoderClass::URLEncoderClass()
 {

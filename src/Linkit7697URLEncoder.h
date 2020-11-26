@@ -2,8 +2,8 @@
 // (c) Copyright Arduino. 2019
 // Released under Apache License, version 2.0
 
-#ifndef URL_ENCODER_H
-#define URL_ENCODER_H
+#ifndef Linkit7697URL_ENCODER_H
+#define Linkit7697URL_ENCODER_H
 
 #include <Arduino.h>
 

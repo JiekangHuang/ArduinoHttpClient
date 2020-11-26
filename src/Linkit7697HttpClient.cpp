@@ -2,8 +2,8 @@
 // (c) Copyright 2010-2011 MCQN Ltd
 // Released under Apache License, version 2.0
 
-#include "HttpClient.h"
-#include "b64.h"
+#include "Linkit7697HttpClient.h"
+#include "Linkit7697b64.h"
 
 // Initialize constants
 const char* HttpClient::kUserAgent = "Arduino/2.2.0";
